@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Purchased Videos{% endblock %}
+
+{% block content %}
+<h2>Your Purchased Videos</h2>
+
+<!-- ✅ Toast popup for successful payment -->
+{% if payment_success %}
+<div id="toast" class="toast">✅ Payment successful! Video added to your purchases.</div>
+<script>
+    window.addEventListener("DOMContentLoaded", function () {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 4000);
+    });
+</script>
+{% endif %}
+
+<!-- ✅ Back to Explore -->
+<div style="text-align: center; margin: 20px 0;">
+    <a href="{{ url_for('explore') }}" class="purchase-btn">⬅ Back to Explore</a>
+</div>
+
+<!-- ✅ Grid container for videos -->
+<div class="video-container">
+    {% for video in videos %}
+    <div class="video-box">
+        <video controls>
+            <source src="{{ video.file_link }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <h4>{{ video.title }}</h4>
+        <p>{{ video.description }}</p>
+        <p><strong>Price:</strong> ₹{{ video.price }}</p>
+        <p><strong>Purchased on:</strong> {{ video.purchase_date.strftime('%d %b %Y, %I:%M %p') }}</p>
+
+        {% if video.download_url != '#' %}
+        <a href="{{ video.download_url }}" target="_blank">
+            <button class="purchase-btn">⬇ Download</button>
+        </a>
+        {% else %}
+        <button class="purchase-btn" disabled>No file available</button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ✅ Styling -->
+<style>
+.video-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 20px 0;
+    justify-content: center;
+}
+
+.video-box {
+    background-color: #1c1c1c;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px;
+    width: 300px;
+    color: #f0f0f0;
+    box-shadow: 0 0 10px rgba(0, 255, 198, 0.2);
+    text-align: center;
+}
+
+.video-box video {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.purchase-btn {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #00FFC6;
+    color: #0f0f0f;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.purchase-btn:hover {
+    background-color: #FFD700;
+    color: #000;
+}
+
+/* ✅ Toast Styling */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #00FFC6;
+    color: #0f0f0f;
+    text-align: center;
+    border-radius: 10px;
+    padding: 16px;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-weight: bold;
+}
+.toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 3s;
+}
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px; opacity: 1; }
+}
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
+</style>
+
+{% endblock %}

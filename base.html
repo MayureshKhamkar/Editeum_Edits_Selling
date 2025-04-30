@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Editeum{% endblock %}</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+        }
+        .navbar-nav .nav-link {
+            color: white;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #0d6efd;
+        }
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 250px;
+            background-color: #111;
+            padding: 20px;
+            display: none;
+            z-index: 1050;
+        }
+        .sidebar.active {
+            display: block;
+        }
+        .sidebar .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+        .sidebar-menu li {
+            list-style: none;
+            margin: 15px 0;
+        }
+        .sidebar-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar-menu a:hover {
+            color: #0d6efd;
+        }
+
+        .footer {
+    background-color: #111;
+    padding: 40px 20px;
+    color: white;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 10px;
+}
+
+.footer-section h5 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #00FFC6;
+}
+
+.footer-section a {
+    color: white;
+    text-decoration: none;
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.footer-section a:hover {
+    color: #0d6efd;
+}
+
+.footer-section p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+}
+
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg container-fluid py-2">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold" href="{{ url_for('home') }}">Editeum</a>
+            <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item me-4">
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link" href="{{ url_for('explore') }}">Explore</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link" href="{{ url_for('blogs') }}">Blog</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link" href="{{ url_for('review') }}">Review</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
+                    </li>
+                </ul>
+
+                <div class="navbar-items d-flex align-items-center">
+                    {% if username %}
+                        <div class="user-info me-4" onclick="toggleSidebar()">
+                            <i class="bi bi-person-circle profile-icon"></i>
+                        </div>
+                        <a class="btn btn-danger" href="{{ url_for('logout') }}">Logout</a>
+                    {% else %}
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <span class="close-btn" onclick="toggleSidebar()">&times;</span>
+        <h4 class="mb-3">Welcome</h4>
+        <p>Hello, {% if username %} {{ username }} {% else %} Guest {% endif %}!</p>
+        <ul class="sidebar-menu ps-0">
+            <li><a href="{{ url_for('view_profile') }}"><i class="fa fa-user me-2"></i>View Profile</a></li>
+            {% if loggedin %}
+            <li><a href="{{ url_for('purchased_videos') }}"><i class="fa fa-film me-2"></i>My Purchases</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('upload_edit') }}"><i class="fa fa-cloud-upload-alt me-2"></i>Upload</a></li>
+           
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <section id="content">
+        {% block content %}{% endblock %}
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Social Media Links -->
+            <div class="footer-section">
+                <h5>Follow Us</h5>
+                <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i> Facebook</a>
+                <a href="#" aria-label="Twitter"><i class="bi bi-twitter"></i> Twitter</a>
+                <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i> Instagram</a>
+                <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i> LinkedIn</a>
+            </div>
+            <!-- Navigation Links -->
+            <div class="footer-section">
+                <h5>Quick Links</h5>
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('explore') }}">Explore</a>
+                <a href="{{ url_for('blogs') }}">Blog</a>
+                <a href="{{ url_for('review') }}">Review</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+            </div>
+            <!-- Contact Information -->
+            <div class="footer-section">
+                <h5>Contact Us</h5>
+                <p>Email: contact@editeum.com</p>
+                <p>Phone: +123 456 7890</p>
+                <p>Address: 123 Editeum St., Pune, India</p>
+            </div>
+        </div>
+    </footer>
+    
+
+
+
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
+</html>

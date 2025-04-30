@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload & Edit Video</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        .go-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            background: lightcoral;
+            padding: 10px 15px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .go-back:hover {
+            background: #ff7f7f;
+        }
+
+        .upload-video {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 15px 5px #1f1f1f;
+            max-width: 600px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .upload-video input, .upload-video textarea, .upload-video select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            background: #333;
+            color: white;
+            font-size: 14px;
+        }
+
+        .upload-video button {
+            background: lightcoral;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .upload-video button:hover {
+            background: #ff7f7f;
+        }
+
+        .video-preview {
+            width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('home') }}" class="go-back">&#8592; Go Back</a>
+    <section class="upload-video">
+        <h3>Upload & Edit Video</h3>
+        <form id="uploadForm" action="{{ url_for('upload_edit') }}" method="POST" enctype="multipart/form-data">
+            <input type="text" name="videoTitle" id="videoTitle" placeholder="Video Title" required>
+            <textarea name="videoDescription" id="videoDescription" placeholder="Video Description" required></textarea>
+            <input type="number" name="videoPrice" id="videoPrice" placeholder="Enter Price ($)" min="0" required>
+
+            <!-- Category Selection -->
+            <label for="videoCategory">Category:</label>
+            <select name="videoCategory" id="videoCategory">
+                <option value="uncategorized" selected>Uncategorized</option>
+                <option value="music">Music</option>
+                <option value="animation">Animation</option>
+                <option value="gaming">Gaming</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="other">Other</option>
+            </select>
+
+            <input type="file" name="videoFile" id="videoFile" accept="video/mp4,video/avi,video/mov,video/mkv" required>
+            <video id="videoPreview" class="video-preview" controls></video>
+            <button type="submit">Upload Video</button>
+        </form>
+    </section>
+</body>
+</html>

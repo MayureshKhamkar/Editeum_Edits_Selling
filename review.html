@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Reviews - Editeum{% endblock %}
+
+{% block content %}
+<style>
+    .review-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .review-card {
+        background-color: #1c1c1c;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        width: 30%;
+        min-width: 250px;
+        max-width: 350px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .username {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .review-text {
+        font-size: 14px;
+        margin-bottom: 10px;
+        max-height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .read-more {
+        color: #1e90ff;
+        cursor: pointer;
+        font-size: 12px;
+        display: inline;
+    }
+
+    .interaction-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .like-btn, .dislike-btn {
+        border: none;
+        background: none;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .like-btn.active {
+        color: green;
+    }
+
+    .dislike-btn.active {
+        color: red;
+    }
+
+    .delete-btn {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .form-container {
+        max-width: 400px;
+        margin: auto;
+    }
+</style>
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">User Reviews</h2>
+
+    <div class="review-container">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="review-card">
+                    <p class="username">{{ review.username }}</p>
+                    <p class="review-text">
+                        <span class="short-text">{{ review.comment[:100] }}</span>
+                        {% if review.comment|length > 100 %}
+                            <span class="read-more" onclick="expandReview(this)" data-full-text="{{ review.comment }}"> Read More</span>
+                        {% endif %}
+                    </p>
+
+                    <!-- Star Rating (Only if user is NOT the review owner) -->
+                    {% if session['id'] != review.user_id %}
+                        <p>
+                            {% for _ in range(review.star_rating) %} ⭐ {% endfor %}
+                        </p>
+                    {% endif %}
+
+                    <!-- Like & Dislike Buttons -->
+                    <div class="interaction-buttons">
+                        <button class="like-btn {% if review.liked_by_user %}active{% endif %}" data-review="{{ review.id }}">
+                            👍 <span class="like-count">{{ review.likes }}</span>
+                        </button>
+                        <button class="dislike-btn {% if review.disliked_by_user %}active{% endif %}" data-review="{{ review.id }}">
+                            👎 <span class="dislike-count">{{ review.dislikes }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Delete Button (Only for Admin or Review Author) -->
+                    {% if loggedin and (session['id'] == review.user_id or session.get('admin_loggedin')) %}
+                        <form action="{{ url_for('delete_review', review_id=review.id) }}" method="post">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center">No reviews yet. Be the first to leave a review!</p>
+        {% endif %}
+    </div>
+
+    {% if loggedin %}
+    <div class="form-container mt-4">
+        <h3 class="text-center">Leave a Review</h3>
+        <form action="{{ url_for('review') }}" method="post">
+            <div class="mb-3">
+                <textarea class="form-control" id="reviewText" name="reviewText" rows="2" placeholder="Write your review..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Submit</button>
+        </form>
+    </div>
+    {% else %}
+        <p class="text-center mt-4">Please <a href="{{ url_for('login') }}">login</a> to leave a review.</p>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".like-btn, .dislike-btn").forEach(button => {
+        button.addEventListener("click", function() {
+            let reviewId = this.getAttribute("data-review");
+            let action = this.classList.contains("like-btn") ? "like" : "dislike";
+            let button = this;
+            let isActive = button.classList.contains("active");
+
+            fetch(`/review/${reviewId}/engage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: action, undo: isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let countSpan = button.querySelector("span");
+                    countSpan.textContent = data.new_count;
+
+                    // Toggle the active state
+                    button.classList.toggle("active", !isActive);
+
+                    // Ensure only one of like/dislike is active at a time
+                    if (!isActive) {
+                        if (action === "like") {
+                            button.nextElementSibling.classList.remove("active");
+                        } else {
+                            button.previousElementSibling.classList.remove("active");
+                        }
+                    }
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    });
+});
+
+// Fixing Read More Expand Issue
+function expandReview(element) {
+    let parent = element.parentElement;
+    let fullText = element.getAttribute("data-full-text");
+
+    // Replace short text with full comment
+    parent.innerHTML = fullText;
+}
+</script>
+
+{% endblock %}
+ 

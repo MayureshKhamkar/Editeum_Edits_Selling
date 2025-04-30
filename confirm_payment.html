@@ -1,0 +1,28 @@
+
+{% extends 'base.html' %}
+{% block title %}Confirm Payment - Editeum{% endblock %}
+
+{% block content %}
+<div class="payment-confirm">
+    <h2>Complete Your Payment</h2>
+    <p>Scan the QR code or tap the button below to pay ₹{{ video.price }} for <strong>{{ video.title }}</strong></p>
+
+    <!-- QR for Desktop -->
+    <img src="data:image/png;base64,{{ qr_data }}" alt="QR Code" width="250" height="250"><br><br>
+
+    <!-- Deep Link Button for Mobile -->
+    <a href="{{ upi_link }}" class="btn btn-success" style="margin-bottom: 20px;">Pay with Google Pay</a>
+
+    <!-- Manual Confirmation Button -->
+    <form action="{{ url_for('payment_success') }}" method="POST">
+        <button type="submit" class="btn btn-primary">I have completed the payment</button>
+    </form>
+</div>
+
+<style>
+.payment-confirm {
+    text-align: center;
+    padding: 30px;
+}
+</style>
+{% endblock %}

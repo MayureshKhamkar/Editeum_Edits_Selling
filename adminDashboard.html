@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+        }
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            height: 100%;
+            background-color: #1e1e1e;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #bbb;
+            display: block;
+        }
+        .sidebar a:hover {
+            background: #333;
+            color: #fff;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .card {
+            width: 80%;
+            padding: 10px;
+            font-size: 14px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">Manage Users</a>
+        <a href="{{ url_for('admin_videos') }}">Manage Videos</a>
+        <a href="{{ url_for('admin_transactions') }}">Transactions</a>
+        <a href="{{ url_for('upload_blog') }}">Upload Blog</a>
+        <a href="{{ url_for('admin_reviews') }}">Manage Reviews</a> <!-- New -->
+    </div>
+
+    <div class="main-content">
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-danger logout-btn">Logout</a>
+        <h2 class="text-center">Admin Dashboard</h2>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white text-center">
+                    <h6>Total Users</h6>
+                    <h4>{{ total_users }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white text-center">
+                    <h6>Total Videos</h6>
+                    <h4>{{ total_videos }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white text-center">
+                    <h6>Total Sales</h6>
+                    <h4>₹{{ total_sales }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container" style="width: 80%; margin: auto;">
+            <canvas id="dashboardChart"></canvas>
+        </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("{{ url_for('admin_dashboard_chart') }}") // Fetch data from Flask API
+                .then(response => response.json())
+                .then(data => {
+                    var ctx = document.getElementById("dashboardChart").getContext("2d");
+
+                    var dashboardChart = new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: "Dashboard Stats",
+                                data: data.data,
+                                backgroundColor: ["#4CAF50", "#2196F3", "#f44336"],
+                                borderColor: ["#388E3C", "#1976D2", "#D32F2F"],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error("Error fetching chart data:", error));
+        });
+    </script>
+
+</body>
+</html>

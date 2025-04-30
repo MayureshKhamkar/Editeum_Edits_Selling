@@ -1,0 +1,150 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>User Profile</title>
+        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+        <style>
+            body {
+                background-color: black;
+                color: white;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                position: relative;
+            }
+
+            .go-back {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                color: white;
+                text-decoration: none;
+                font-size: 18px;
+                background: lightcoral;
+                padding: 10px 15px;
+                border-radius: 6px;
+                transition: background 0.3s ease;
+            }
+
+            .go-back:hover {
+                background: #ff7f7f;
+            }
+
+            .profile-container {
+                width: 400px;
+                background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0px 0px 20px 5px #1f1f1f;
+                text-align: center;
+            }
+
+            .profile-upper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-bottom: 20px;
+                border-bottom: 2px solid lightcoral;
+            }
+
+            .profile-pic {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid white;
+                cursor: pointer;
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .profile-pic:hover {
+                transform: scale(1.1);
+            }
+
+            .upload-btn {
+                margin-top: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                color: white;
+                background-color: lightcoral;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+            .upload-btn:hover {
+                background-color: #ff7f7f;
+            }
+
+            .profile-info {
+                margin-top: 15px;
+            }
+
+            .username {
+                font-size: 22px;
+                color: lightcoral;
+                margin-bottom: 10px;
+            }
+
+            .saved-section {
+                margin-top: 15px;
+                font-size: 18px;
+                color: white;
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                padding: 10px;
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.1);
+                transition: background 0.3s ease;
+            }
+
+            .saved-section:hover {
+                background: lightcoral;
+                color: white;
+            }
+
+            #file-input {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <a href="{{ url_for('home') }}" class="go-back">&#8592; Go Back</a>
+        <div class="profile-container">
+            <div class="profile-upper">
+                <img src="profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="profile-pic">
+                <input type="file" id="file-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('file-input').click();">Change Profile Photo</button>
+            </div>
+            <div class="profile-info">
+                <h2 class="username">Username</h2>
+                <div class="saved-section">
+                    <i class="fa fa-bookmark"></i>
+                    <span>View Saved</span>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('profile-pic').src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        </script>
+    </body>
+    </html>

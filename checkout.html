@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Video</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background 0.2s;
+        }
+
+        /* Payment Box */
+        .payment-container {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            width: 250px;
+            margin-left: 50px;
+            border: 2px solid #ffcc00;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #ffcc00;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        #pay-button {
+            background: #ffcc00;
+            border: none;
+            color: #121212;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        #pay-button:hover {
+            background: #e6b800;
+        }
+
+        /* Video Container */
+        .video-container {
+            width: 40%;
+            max-width: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            position: relative;
+            border: 2px solid #ffcc00;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .payment-container {
+                margin: 0;
+                width: 85%;
+            }
+
+            .video-container {
+                width: 85%;
+                max-width: 100%;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-container">
+        <h2>Purchase: {{ video['title'] }}</h2>
+        <p>Price: ₹{{ video['price'] }}</p>
+        <button id="pay-button">Pay Now</button>
+    </div>
+
+    <div class="video-container">
+        <video 
+    id="video-player" 
+    controls 
+    controlsList="nodownload nofullscreen noplaybackrate " 
+    disablePictureInPicture 
+    style="pointer-events: none;">
+    <source src="{{ video['file_link'] }}" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+    </div>
+
+    <script>
+        // Razorpay Payment Integration
+        var options = {
+            "key": "rzp_test_m3rrKpXuraD7HH",
+            "amount": "{{ order.amount }}",
+            "currency": "INR",
+            "name": "Editeum",
+            "description": "Purchase Video",
+            "order_id": "{{ order.id }}",
+            "handler": function (response) {
+                fetch('/payment_success', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        "video_id": "{{ video['id'] }}",
+                        "price": "{{ video['price'] }}"
+                    })
+                }).then(response => response.text()).then(data => {
+                    alert("Payment Successful!");
+                    window.location.href = "/dashboard";
+                });
+            },
+            "theme": {
+                "color": "#ffcc00"
+            }
+        };
+        
+        var rzp1 = new Razorpay(options);
+        document.getElementById('pay-button').onclick = function(e){
+            rzp1.open();
+            e.preventDefault();
+        }
+
+
+        var video = document.getElementById('video-player');
+        var videoSrc = "static/hls/video1/index.m3u8";  // Example HLS URL
+
+        if (Hls.isSupported()) {
+            var hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+        } else {
+            video.src = videoSrc;
+        }
+
+        // Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(event) {
+            if (event.keyCode == 123 || 
+                (event.ctrlKey && event.shiftKey && (event.keyCode == 73 || event.keyCode == 74)) ||  
+                (event.ctrlKey && event.keyCode == 85)) {  
+                alert("Developer tools are disabled.");
+                event.preventDefault();
+            }
+        });
+
+        // Detect Open Developer Tools
+        setInterval(() => {
+            let before = new Date().getTime();
+            debugger;
+            let after = new Date().getTime();
+            
+            if (after - before > 100) {
+                alert("Developer tools detected! Closing...");
+                window.location.href = "about:blank";
+            }
+        }, 1000);
+
+        // Detect Screen Recording
+        setInterval(() => {
+            if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+                alert("Screen recording detected! Video playback disabled.");
+                document.getElementById("video-player").pause();
+            }
+        }, 2000);
+
+        // Detect External Screen Recording Software
+        function detectScreenRecording() {
+            let hidden, visibilityChange;
+            if (typeof document.hidden !== "undefined") {
+                hidden = "hidden";
+                visibilityChange = "visibilitychange";
+            } else if (typeof document.msHidden !== "undefined") {
+                hidden = "msHidden";
+                visibilityChange = "msvisibilitychange";
+            } else if (typeof document.webkitHidden !== "undefined") {
+                hidden = "webkitHidden";
+                visibilityChange = "webkitvisibilitychange";
+            }
+
+            document.addEventListener(visibilityChange, function () {
+                if (document[hidden]) {
+                    alert("Screen recording detected! Video playback disabled.");
+                    document.getElementById("video-player").pause();
+                    startBlinking();
+                }
+            });
+        }
+
+        function startBlinking() {
+            let blink = true;
+            setInterval(() => {
+                document.body.style.backgroundColor = blink ? "#ff0000" : "#121212";
+                blink = !blink;
+            }, 200);
+        }
+
+        detectScreenRecording();
+
+    </script>

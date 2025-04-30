@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore - Editeum{% endblock %}
+
+{% block content %}
+<style>
+.search-bar {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.search-bar input {
+    width: 200%;
+    max-width: 800px;
+    display: block;
+    margin: 0 auto;
+    padding: 10px;
+    font-size: 18px;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    border: 1px solid #00FFC6;
+    border-radius: 6px;
+}
+
+
+    .trending-heading {
+        color: #00FFC6;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    #video-section {
+        padding: 20px;
+    }
+
+    .video-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .video-box {
+        background-color: #1a1a1a;
+        border: 1px solid #00FFC6;
+        border-radius: 10px;
+        padding: 15px;
+        width: 320px;
+        color: #f0f0f0;
+        text-align: center;
+        position: relative;
+    }
+
+    .video-box iframe,
+    .video-box video {
+        width: 100%;
+        height: 200px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .buy-now-btn,
+    .pay-option-btn {
+        background-color: #00FFC6;
+        color: #0f0f0f;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-weight: bold;
+        transition: background 0.3s, color 0.3s;
+    }
+
+    .buy-now-btn:hover,
+    .pay-option-btn:hover {
+        background-color: #FFD700;
+        color: #0f0f0f;
+    }
+
+    .qr-image {
+        display: none;
+        margin: 10px auto 0;
+        width: 180px;
+        height: 180px;
+        border: 2px solid #00FFC6;
+        border-radius: 10px;
+    }
+
+    .note-text {
+        font-size: 14px;
+        color: #FFD700;
+        margin-top: 10px;
+    }
+
+    .pay-options,
+    .txn-form {
+        display: none;
+        margin-top: 10px;
+    }
+
+    .txn-form input[type="text"] {
+        padding: 8px;
+        width: 80%;
+        border-radius: 6px;
+        border: 1px solid #00FFC6;
+        background-color: #1a1a1a;
+        color: #f0f0f0;
+        margin-bottom: 10px;
+    }
+
+    .toast {
+        visibility: hidden;
+        min-width: 280px;
+        background-color: #00FFC6;
+        color: #0f0f0f;
+        text-align: center;
+        border-radius: 10px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        bottom: 30px;
+        font-weight: bold;
+        transform: translateX(-50%);
+        box-shadow: 0 0 10px #00FFC6;
+        transition: visibility 0s, opacity 0.5s linear;
+        opacity: 0;
+    }
+
+    .toast.show {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
+
+<div class="search-bar">
+    <form method="GET" action="{{ url_for('explore') }}">
+        <input type="text" name="search" placeholder="Search edits..." value="{{ search_query }}">
+    </form>
+</div>
+
+<h3 class="trending-heading">Explore</h3>
+<section id="video-section">
+    <div class="video-container">
+        {% for video in videos %}
+        <div class="video-box" id="video-box-{{ video.id }}">
+            {% if "drive.google.com" in video.file_link or "cloudinary.com" in video.file_link %}
+                <iframe src="{{ video.file_link }}" allow="autoplay" frameborder="0"
+                        sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+            {% else %}
+                <video controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture>
+                    <source src="{{ video.file_link }}" type="video/mp4">
+                </video>
+            {% endif %}
+
+            <h3>{{ video.title }}</h3>
+            <p>{{ video.description }}</p>
+            <p><strong>Uploader:</strong> {{ video.uploader_name }}</p>
+            <p><strong>Price: ₹{{ video.price }}</strong></p>
+
+            {% if video.already_purchased %}
+                <p style="color: #FFD700;"><strong>Purchased</strong></p>
+            {% else %}
+
+
+                <!-- set upi_link
+                set upi_link_qr in this space according to your upi_id -->
+
+
+
+                <button class="buy-now-btn" onclick="togglePayOptions('{{ video.id }}')">Pay Now</button>
+
+                <div class="pay-options upi-mobile-buttons" id="options-{{ video.id }}">
+                    <button class="pay-option-btn" onclick="payWithGooglePay('{{ upi_link }}')">Pay with Google Pay</button>
+                    <button class="pay-option-btn" onclick="openUPIFallback('{{ upi_link }}')">PhonePe / Paytm</button>
+                </div>
+
+                <img src="{{ url_for('generate_qr', upi_url=upi_link_qr) }}" alt="Scan to Pay"
+                     class="qr-image" id="qr-{{ video.id }}">
+
+                <form action="{{ url_for('confirm_payment') }}" method="POST" class="txn-form" id="txn-form-{{ video.id }}">
+                    <input type="hidden" name="video_id" value="{{ video.id }}">
+                    <input type="hidden" name="price" value="{{ video.price }}">
+                    <input type="text" name="transaction_id" placeholder="Enter Transaction ID" required>
+                    <button type="submit" class="buy-now-btn">Confirm Payment</button>
+                </form>
+
+                <p class="note-text">Scan QR → Enter ₹{{ video.price }} manually → Pay → Paste Txn ID</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<div id="toast" class="toast">Video purchased successfully!</div>
+
+<script>
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    function togglePayOptions(videoId) {
+        const isMobile = isMobileDevice();
+        document.getElementById("txn-form-" + videoId).style.display = "block";
+
+        if (isMobile) {
+            document.getElementById("options-" + videoId).style.display = "block";
+        } else {
+            document.getElementById("qr-" + videoId).style.display = "block";
+        }
+    }
+
+    function payWithGooglePay(upiUrl) {
+        const intentLink = `intent:${upiUrl.replace('upi://', '')}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+        window.location.href = intentLink;
+    }
+
+    function openUPIFallback(upiUrl) {
+        window.location.href = upiUrl;
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 4000);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("video").forEach(video => {
+            video.setAttribute("controlsList", "nodownload nofullscreen noplaybackrate");
+            video.setAttribute("disablePictureInPicture", true);
+            video.oncontextmenu = () => false;
+        });
+
+        document.addEventListener("contextmenu", e => e.preventDefault());
+
+        document.addEventListener("keydown", function (e) {
+            const key = (e.key || "").toLowerCase();
+            if (
+                (e.ctrlKey && (key === "s" || key === "u")) ||
+                e.key === "F12" ||
+                (e.ctrlKey && e.shiftKey && key === "i")
+            ) {
+                e.preventDefault();
+            }
+        });
+
+        // Hide UPI buttons on desktop
+        if (!isMobileDevice()) {
+            document.querySelectorAll(".upi-mobile-buttons").forEach(el => el.style.display = "none");
+        }
+    });
+</script>
+{% endblock %}
