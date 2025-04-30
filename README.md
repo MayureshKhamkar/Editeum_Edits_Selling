@@ -142,9 +142,9 @@ This project is created for academic purposes and is open to learning use. Comme
 
 ## 👨‍💻 Developed By
 
-**Mayuresh Khamkar** 
-TYBBA(CA) – Final Year Project  
-Savitribai Phule Pune University  
-April 2025
+- **Developed By**: Mayuresh Khamkar and Aniket Thatte  
+- **Semester**: 6 
+- **Academic Year**: 2022–2025  
+- **University**: Savitribai Phule Pune University  
+- **Program**: BBA(CA)
 
----
